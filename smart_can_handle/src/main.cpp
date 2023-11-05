@@ -8,6 +8,8 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin( 115200 );
   commandLineInit();
+
+  Serial.print( F( welcomeText ) );
 }
 
 void loop() {
