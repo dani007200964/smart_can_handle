@@ -1,0 +1,1 @@
+This is the firmware for my smart chan handle project. Still in progress, documentation will arrive when it is done.
