@@ -4,6 +4,7 @@
 #include "main.hpp"
 #include "Commander-API.hpp"
 #include "Commander-API-Commands.hpp"
+#include "globalResources.hpp"
 
 #define VT100_FMT_REGULAR       "\033[0m"
 #define VT100_FMT_BOLD          "\033[1m"
@@ -21,6 +22,7 @@
                     "           | |                              \r\n"                                          \
                     "           |_|                              \r\n"                                          \
                     "\r\n" VT100_FMT_REGULAR VT100_FMT_WHITE                                                    \
+                    "Created by Daniel Hajnal 2023.\r\n$: "
 
 void commandLineInit();
 
@@ -29,6 +31,7 @@ void commandLineUpdate();
 bool logAngle_func( char *args, Stream *response, void* parent );
 bool logGyro_func( char *args, Stream *response, void* parent );
 bool logTrain_func( char *args, Stream *response, void* parent );
+bool beepTest_func( char *args, Stream *response, void* parent );
 
 
 #endif

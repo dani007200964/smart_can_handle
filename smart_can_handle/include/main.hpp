@@ -6,6 +6,8 @@
 // Maximum size of the command in characters.
 #define COMMAND_SIZE 30
 
+#define BUZZER_PIN A3
+
 // Update rate of the motion sensor in milliseconds.
 #define SENSOR_SAMPLE_PERIOD 75
 
@@ -15,14 +17,13 @@
 
 #define GYRO_ARRAY_SIZE 40
 
+
 typedef enum{
   NO_LOG,
   LOG_ANGLE,
   LOG_GYRO,
   LOG_TRAIN
 } logType_t;
-
-extern logType_t logType;
 
 
 #endif

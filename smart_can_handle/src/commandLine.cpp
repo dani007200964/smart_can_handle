@@ -5,7 +5,8 @@ Commander::systemCommand_t API_tree[] = {
     SYSTEM_COMMAND_DIGITALREAD,
     systemCommand( "logAngle", "", logAngle_func ),
     systemCommand( "logGyro", "", logGyro_func ),
-    systemCommand( "logTrain", "", logTrain_func )
+    systemCommand( "logTrain", "", logTrain_func ),
+    systemCommand( "beepTest", "", beepTest_func )
 };
 
 char commandBuffer[ COMMAND_SIZE ];
@@ -36,7 +37,9 @@ void commandLineInit(){
 }
 
 void commandLineUpdate(){
-    commander.update( commandBuffer, COMMAND_SIZE, &Serial );
+    if( logType == NO_LOG ){
+        commander.update( commandBuffer, COMMAND_SIZE, &Serial );
+    }
 }
 
 bool logAngle_func( char *args, Stream *response, void* parent ){
@@ -63,15 +66,7 @@ bool logTrain_func( char *args, Stream *response, void* parent ){
   return true;
 }
 
-void printTrainData(){
-  int i;
-
-  Serial.print( millis() % 1000 );
-    Serial.print( ", " );
-
-  for( i = 0; i < GYRO_ARRAY_SIZE; i++ ){
-    //Serial.print( gyroArray[ i ] );
-    Serial.print( ", " );
-  }
-  Serial.println( "idle" );
+bool beepTest_func( char *args, Stream *response, void* parent ){
+    tone( BUZZER_PIN, 440, 500 );
+    return true;
 }
