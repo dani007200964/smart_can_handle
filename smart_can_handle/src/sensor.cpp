@@ -1,4 +1,5 @@
 #include "sensor.hpp"
+#include "gestureParser.hpp"
 
 // MPU6050 Sesnor Object.
 MPU6050 motionSensor;
@@ -22,6 +23,9 @@ float angle;
 
 // Gyro data for wiggle recognition.
 int16_t gyroArray[ GYRO_ARRAY_SIZE ] = { 0 };
+
+int selectedFeatureIndexes[ 15 ] = { 5, 6, 13, 14, 16, 17, 18, 19, 21, 22, 25, 32, 33, 37, 38 };
+float selectedFeatures[ 15 ];
 
 unsigned long sensorTimerStart = 0;
 
@@ -55,6 +59,8 @@ void sensorUpdate(){
     float accDotProduct = 0.0;
     float denominator;
 
+    bool trigger = false;
+
     int i;
 
     if( !sensorInitialized ){
@@ -64,6 +70,7 @@ void sensorUpdate(){
     if( ( millis() - sensorTimerStart ) <= SENSOR_SAMPLE_PERIOD ){
         return;
     }
+    sensorTimerStart = millis();
 
     motionSensor.getMotion6( &accX, &accY, &accZ, &gyroX, &gyroY, &gyroZ );
 
@@ -87,8 +94,38 @@ void sensorUpdate(){
     }
     gyroArray[ i ] = gyroZ / GYRO_SENSITIVITY;
 
+    for( i = 0; i < 15; i++ ){
+        selectedFeatures[ i ] = (float)gyroArray[ selectedFeatureIndexes[ i ] ];
+    }
 
-    sensorTimerStart = millis();
+    trigger = RandomForest::predict( selectedFeatures );
+
+    if( trigger ){
+        for( i = 0; i < GYRO_ARRAY_SIZE; i++ ){
+            gyroArray[ i ] = 0;
+        }
+        player.play( weReNotGonnaMidi );
+    }
+
+    if( !player.isPlaying() ){
+
+        if( angle > ANGLE_LOW_THRESHOLD ){
+            i = round( angle * 10.0 );
+            beepPeriodOff = map( i, ANGLE_MAP_LOW_BOUND, ANGLE_MAP_HIGH_BOUND, BEEP_PERIOD_MAP_LOW_BOUND, BEEP_PERIOD_MAP_HIGH_BOUND );
+            beepFrequency = map( i, ANGLE_MAP_LOW_BOUND, ANGLE_MAP_HIGH_BOUND, BEEP_FREQ_MAP_LOW_BOUND, BEEP_FREQ_MAP_HIGH_BOUND );
+            if(beepPeriodOff < 50){
+                beepPeriodOff = 50;
+            }
+        }
+        else{
+            beepPeriodOff = 0;
+        }
+
+    }
+
+    else{
+        beepPeriodOff = 0;
+    }
 
     if( logType != NO_LOG ){
 
@@ -108,6 +145,12 @@ void sensorUpdate(){
             case LOG_TRAIN:
                 printTrainData();
                 break;
+            case LOG_TRIGGER:
+                if( trigger ){
+                    commander_uptime_func( NULL, &Serial, NULL );
+                    Serial.println( F( " Trigger" ) );
+                }
+                break;
             default:
                 break;
         }
@@ -126,5 +169,6 @@ void printTrainData(){
     Serial.print( gyroArray[ i ] );
     Serial.print( ", " );
   }
-  Serial.println( "idle" );
+
+  Serial.println( !digitalRead( TRAIN_BUTTON_PIN ) );
 }

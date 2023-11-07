@@ -4,6 +4,7 @@
 #include "globalResources.hpp"
 #include "MPU6050.h"
 #include "Wire.h"
+#include "Commander-API-Commands.hpp"
 
 void sensorInit();
 

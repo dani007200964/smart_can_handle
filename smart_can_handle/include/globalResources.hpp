@@ -4,6 +4,7 @@
 #include "main.hpp"
 #include "MPU6050.h"
 #include "Commander-API.hpp"
+#include "midiPlayer.hpp"
 
 extern logType_t logType;
 
@@ -12,6 +13,19 @@ extern MPU6050 motionSensor;
 
 // We have to create an object from Commander class.
 extern Commander commander;
+
+extern midiPlayer player;
+
+extern const uint8_t* barbieMidi;
+extern const uint8_t* lalaMidi;
+extern const uint8_t* movinCruisinMidi;
+extern const uint8_t* drinkMidi;
+extern const uint8_t* rickMidi;
+extern const uint8_t* weReNotGonnaMidi;
+extern const uint8_t* vodkaMidi;
+
+extern int beepPeriodOff;
+extern int beepFrequency;
 
 
 

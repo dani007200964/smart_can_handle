@@ -2,11 +2,20 @@
 
 Commander::systemCommand_t API_tree[] = {
     SYSTEM_COMMAND_I2CSCAN,
-    SYSTEM_COMMAND_DIGITALREAD,
+    //SYSTEM_COMMAND_DIGITALREAD,
+    //SYSTEM_COMMAND_DIGITALWRITE,
+    //SYSTEM_COMMAND_PINMODE,
+
+
+    systemCommand( "trainEn", "", trainEn_func ),
+    systemCommand( "trainDis", "", trainDis_func ),
     systemCommand( "logAngle", "", logAngle_func ),
     systemCommand( "logGyro", "", logGyro_func ),
     systemCommand( "logTrain", "", logTrain_func ),
-    systemCommand( "beepTest", "", beepTest_func )
+    systemCommand( "logTrigger", "", logTrigger_func ),
+    systemCommand( "beepTest", "", beepTest_func ),
+    systemCommand( "play", "", play_func ),
+    systemCommand( "stop", "", stop_func )
 };
 
 char commandBuffer[ COMMAND_SIZE ];
@@ -68,5 +77,82 @@ bool logTrain_func( char *args, Stream *response, void* parent ){
 
 bool beepTest_func( char *args, Stream *response, void* parent ){
     tone( BUZZER_PIN, 440, 500 );
+    return true;
+}
+
+bool trainEn_func( char *args, Stream *response, void* parent ){
+    pinMode( 11, OUTPUT );
+    digitalWrite( 11, LOW );
+    pinMode( TRAIN_BUTTON_PIN, INPUT );
+    digitalWrite( TRAIN_BUTTON_PIN, HIGH );
+    return true;
+}
+
+bool trainDis_func( char *args, Stream *response, void* parent ){
+    pinMode( 11, INPUT );
+    pinMode( TRAIN_BUTTON_PIN, INPUT );
+    digitalWrite( TRAIN_BUTTON_PIN, LOW );
+    return true;
+}
+
+bool logTrigger_func( char *args, Stream *response, void* parent ){
+  logType = LOG_TRIGGER;
+  return true;
+}
+
+bool play_func( char *args, Stream *response, void* parent ){
+    Argument musicID( args, 0 );
+
+    musicID.parseInt();
+
+    if( !musicID ){
+        Serial.println( F( "---- Available songs ----" ) );
+        Serial.println( F( " -Barbie       : 1" ) );
+        Serial.println( F( " -Drink        : 2" ) );
+        Serial.println( F( " -Movin Cruisin: 3" ) );
+        Serial.println( F( " -Lalalala     : 4" ) );
+        Serial.println( F( " -Rick         : 5" ) );
+        Serial.println( F( " -We're Not    : 6" ) );
+        Serial.println( F( " -Vodka        : 7" ) );
+        return true;
+    }
+
+    if( player.isPlaying() ){
+        Serial.print( F( "Song is already playing." ) );
+        return true;
+    }
+
+    switch( (int)musicID ){
+        case 1:
+            player.play( barbieMidi );
+            break;
+        case 2:
+            player.play( drinkMidi );
+            break;
+        case 3:
+            player.play( movinCruisinMidi );
+            break;
+        case 4:
+            player.play( lalaMidi );
+            break;
+        case 5:
+            player.play( rickMidi );
+            break;
+        case 6:
+            player.play( weReNotGonnaMidi );
+            break;
+        case 7:
+            player.play( vodkaMidi );
+            break;
+        default:
+            Serial.print( F( "Selected ID not valid!" ) );
+            break;
+    }
+
+    return true;
+}
+
+bool stop_func( char *args, Stream *response, void* parent ){
+    player.stop();
     return true;
 }
