@@ -114,6 +114,8 @@ bool play_func( char *args, Stream *response, void* parent ){
         Serial.println( F( " -Rick         : 5" ) );
         Serial.println( F( " -We're Not    : 6" ) );
         Serial.println( F( " -Vodka        : 7" ) );
+        Serial.println( F( " -Deja Vu      : 8" ) );
+        Serial.println( F( " -Titanic      : 9" ) );
         return true;
     }
 
@@ -143,6 +145,12 @@ bool play_func( char *args, Stream *response, void* parent ){
             break;
         case 7:
             player.play( vodkaMidi );
+            break;
+        case 8:
+            player.play( dejaVuMidi );
+            break;
+        case 9:
+            player.play( titanicMidi );
             break;
         default:
             Serial.print( F( "Selected ID not valid!" ) );

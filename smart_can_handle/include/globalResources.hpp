@@ -23,6 +23,8 @@ extern const uint8_t* drinkMidi;
 extern const uint8_t* rickMidi;
 extern const uint8_t* weReNotGonnaMidi;
 extern const uint8_t* vodkaMidi;
+extern const uint8_t* dejaVuMidi;
+extern const uint8_t* titanicMidi;
 
 extern int beepPeriodOff;
 extern int beepFrequency;

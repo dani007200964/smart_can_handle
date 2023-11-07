@@ -64,6 +64,7 @@ void midiPlayer::update(){
         case MIDI_PLAYNOTE:
             data = pgm_read_byte( scorePtr );
             scorePtr++;
+            noTone( tonePin );
             playNote( data );
             break;
         case MIDI_STOPNOTE:

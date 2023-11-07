@@ -104,7 +104,7 @@ void sensorUpdate(){
         for( i = 0; i < GYRO_ARRAY_SIZE; i++ ){
             gyroArray[ i ] = 0;
         }
-        player.play( weReNotGonnaMidi );
+        player.play( vodkaMidi );
     }
 
     if( !player.isPlaying() ){
