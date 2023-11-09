@@ -29,12 +29,15 @@ public:
 
     void stop();
 
+    void mute( bool state );
+
 private:
     const uint8_t* score = NULL;
     const uint8_t* scorePtr = NULL;
     unsigned long nextEvent = 0;
     uint8_t tonePin = 0;
     bool playing = false;
+    bool muted = false;
 };
 
 #endif

@@ -82,12 +82,20 @@ void midiPlayer::playNote( uint8_t note ){
     float result;
     float a = 440.0; //frequency of A (common value is 440Hz)
     result = (a / 32) * pow(2, ((note - 9) / 12.0));
+    if( muted ){
+        return;
+    }
     tone( tonePin, result );
 }
 
 bool midiPlayer::isPlaying(){
     return playing;
 }
+
+void midiPlayer::mute( bool state ){
+    muted = state;
+}
+
 
 void midiPlayer::stop(){
     playing = false;

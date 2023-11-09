@@ -173,3 +173,4 @@ const uint8_t* vodkaMidi = vodkaByteStream;
 const uint8_t* dejaVuMidi = dejaVuByteStream;
 const uint8_t* titanicMidi = titanicByteStream;
 
+int buzzerPin = BUZZER_PIN;

@@ -15,7 +15,10 @@ Commander::systemCommand_t API_tree[] = {
     systemCommand( "logTrigger", "", logTrigger_func ),
     systemCommand( "beepTest", "", beepTest_func ),
     systemCommand( "play", "", play_func ),
-    systemCommand( "stop", "", stop_func )
+    systemCommand( "stop", "", stop_func ),
+    systemCommand( "logToast", "", logToast_func ),
+    systemCommand( "mute", "", mute_func ),
+    systemCommand( "unmute", "", unmute_func )
 };
 
 char commandBuffer[ COMMAND_SIZE ];
@@ -100,6 +103,11 @@ bool logTrigger_func( char *args, Stream *response, void* parent ){
   return true;
 }
 
+bool logToast_func( char *args, Stream *response, void* parent ){
+  logType = LOG_TOAST;
+  return true;
+}
+
 bool play_func( char *args, Stream *response, void* parent ){
     Argument musicID( args, 0 );
 
@@ -164,3 +172,17 @@ bool stop_func( char *args, Stream *response, void* parent ){
     player.stop();
     return true;
 }
+
+bool mute_func( char *args, Stream *response, void* parent ){
+    buzzerPin = 10;
+    player.mute( true );
+    noTone( BUZZER_PIN );
+    return true;
+}
+
+bool unmute_func( char *args, Stream *response, void* parent ){
+    buzzerPin = BUZZER_PIN;
+    player.mute( false );
+    return true;
+}
+

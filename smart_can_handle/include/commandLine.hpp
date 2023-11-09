@@ -38,6 +38,9 @@ bool trainDis_func( char *args, Stream *response, void* parent );
 bool logTrigger_func( char *args, Stream *response, void* parent );
 bool play_func( char *args, Stream *response, void* parent );
 bool stop_func( char *args, Stream *response, void* parent );
+bool logToast_func( char *args, Stream *response, void* parent );
+bool mute_func( char *args, Stream *response, void* parent );
+bool unmute_func( char *args, Stream *response, void* parent );
 
 
 #endif

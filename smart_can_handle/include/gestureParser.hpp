@@ -5,7 +5,8 @@
 
 class RandomForest {
 public:
-    static int predict( float *x );
+    static int predictWiggle( float *x );
+    static int predictToast( float *x );
 };
 
 #endif

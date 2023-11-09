@@ -39,12 +39,12 @@ void loop() {
             beepActive = !beepActive;
 
             if( beepActive ){
-                tone( BUZZER_PIN, beepFrequency );
+                tone( buzzerPin, beepFrequency );
                 beepPeriod = beepPeriodOn;
             }
 
             else{
-                noTone( BUZZER_PIN );
+                noTone( buzzerPin );
                 beepPeriod = beepPeriodOff;
             }
 
@@ -53,6 +53,10 @@ void loop() {
 
         }
 
+    }
+
+    else if( !player.isPlaying() ){
+        noTone( buzzerPin );
     }
 
 

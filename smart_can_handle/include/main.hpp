@@ -7,6 +7,7 @@
 #define COMMAND_SIZE 30
 
 #define BUZZER_PIN A3
+//#define BUZZER_PIN 10
 
 // Update rate of the motion sensor in milliseconds.
 #define SENSOR_SAMPLE_PERIOD 75
@@ -16,6 +17,8 @@
 #define GYRO_SENSITIVITY 131 // Degree per seconds
 
 #define GYRO_ARRAY_SIZE 40
+
+#define TOAST_ARRAY_SIZE 15
 
 #define ANGLE_LOW_THRESHOLD 22.5
 
@@ -34,7 +37,8 @@ typedef enum{
   LOG_ANGLE,
   LOG_GYRO,
   LOG_TRAIN,
-  LOG_TRIGGER
+  LOG_TRIGGER,
+  LOG_TOAST
 } logType_t;
 
 

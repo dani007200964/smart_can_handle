@@ -29,6 +29,8 @@ extern const uint8_t* titanicMidi;
 extern int beepPeriodOff;
 extern int beepFrequency;
 
+extern int buzzerPin;
+
 
 
 #endif

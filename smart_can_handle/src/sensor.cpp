@@ -14,17 +14,22 @@ int16_t gyroX = 0;
 int16_t gyroY = 0;
 int16_t gyroZ = 0;
 
+int16_t toastSignalFiltered = 0;
+int16_t toastArray[ TOAST_ARRAY_SIZE ] = { 0 };
+int8_t toastCntr = 0;
+
 const float DEG2RAD = PI / 180.0f;
 const float RAD2DEG = 180.0f / PI;
 
 bool sensorInitialized = false;
 
-float angle;
+float angleRaw;
+float angle = 0.0;
 
 // Gyro data for wiggle recognition.
 int16_t gyroArray[ GYRO_ARRAY_SIZE ] = { 0 };
 
-int selectedFeatureIndexes[ 15 ] = { 5, 6, 13, 14, 16, 17, 18, 19, 21, 22, 25, 32, 33, 37, 38 };
+uint8_t selectedFeatureIndexes[ 15 ] = { 5, 6, 13, 14, 16, 17, 18, 19, 21, 22, 25, 32, 33, 37, 38 };
 float selectedFeatures[ 15 ];
 
 unsigned long sensorTimerStart = 0;
@@ -59,9 +64,11 @@ void sensorUpdate(){
     float accDotProduct = 0.0;
     float denominator;
 
-    bool trigger = false;
+    bool triggerWiggle = false;
+    bool triggerToast = false;
 
     int i;
+    int16_t deltaToastSignal;
 
     if( !sensorInitialized ){
         return;
@@ -87,8 +94,11 @@ void sensorUpdate(){
 
     denominator = sqrt( accX_f * accX_f + accY_f * accY_f + accZ_f * accZ_f );
 
-    angle = acos( accDotProduct / denominator ) * RAD2DEG;
+    angleRaw = acos( accDotProduct / denominator ) * RAD2DEG;
 
+    angle = angle * 0.8 + angleRaw * 0.2;
+
+    //--- Handle wiggle detection ---//
     for( i = 0; i < GYRO_ARRAY_SIZE - 1; i++ ){
         gyroArray[ i ] = gyroArray[ i + 1 ];
     }
@@ -98,14 +108,87 @@ void sensorUpdate(){
         selectedFeatures[ i ] = (float)gyroArray[ selectedFeatureIndexes[ i ] ];
     }
 
-    trigger = RandomForest::predict( selectedFeatures );
+    triggerWiggle = RandomForest::predictWiggle( selectedFeatures );
 
-    if( trigger ){
+    if( triggerWiggle ){
         for( i = 0; i < GYRO_ARRAY_SIZE; i++ ){
             gyroArray[ i ] = 0;
         }
         player.play( vodkaMidi );
     }
+
+    //--- Toast detection ---//
+    deltaToastSignal = toastSignalFiltered;
+    i = (int16_t)accZ / 100;
+    toastSignalFiltered = 30 * i + 70 * toastSignalFiltered;
+    toastSignalFiltered /= 100;
+    deltaToastSignal = deltaToastSignal - toastSignalFiltered;
+
+    for( i = 0; i < TOAST_ARRAY_SIZE - 1; i++ ){
+        toastArray[ i ] = toastArray[ i + 1 ];
+    }
+    toastArray[ i ] = deltaToastSignal;
+
+    int16_t min = toastArray[ 0 ];
+    int16_t max = toastArray[ 0 ];
+
+    for( i = 1; i < TOAST_ARRAY_SIZE; i++ ){
+        if( min > toastArray[ i ] ){
+            min = toastArray[ i ];
+        }
+        if( max < toastArray[ i ] ){
+            max = toastArray[ i ];
+        }
+    }
+
+    if( toastCntr <= 0 ){
+
+        toastCntr = 3;
+        if( min > -30 ){
+            toastCntr = 0;
+        }
+        if( max < 30 ){
+            toastCntr = 0;
+        }
+
+        if( abs( (int16_t)min - max ) < 50 ){
+            toastCntr = 0;
+        }
+
+    }
+
+    else{
+        toastCntr--;
+
+        if( toastCntr <= 0 ){
+            
+            triggerToast = true;
+            if( angle > 15 ){
+                triggerToast = false;
+            }
+
+            if( angle > 40 ){
+                for( i = 0; i < TOAST_ARRAY_SIZE; i++ ){
+                    toastArray[ i ] = 0;
+                }
+            }
+
+        }
+    }
+
+
+
+
+    //triggerToast = RandomForest::predictToast( selectedFeaturesToast );
+
+    if( triggerToast ){
+        for( i = 0; i < TOAST_ARRAY_SIZE; i++ ){
+            toastArray[ i ] = 0;
+        }
+        player.play( drinkMidi );
+    }
+
+    // Default beep mode playing section
 
     if( !player.isPlaying() ){
 
@@ -115,6 +198,9 @@ void sensorUpdate(){
             beepFrequency = map( i, ANGLE_MAP_LOW_BOUND, ANGLE_MAP_HIGH_BOUND, BEEP_FREQ_MAP_LOW_BOUND, BEEP_FREQ_MAP_HIGH_BOUND );
             if(beepPeriodOff < 50){
                 beepPeriodOff = 50;
+            }
+            if( beepPeriodOff > 1000 ){
+                beepPeriodOff = 1000;
             }
         }
         else{
@@ -146,10 +232,21 @@ void sensorUpdate(){
                 printTrainData();
                 break;
             case LOG_TRIGGER:
-                if( trigger ){
+                if( triggerWiggle || triggerToast ){
                     commander_uptime_func( NULL, &Serial, NULL );
-                    Serial.println( F( " Trigger" ) );
+                    if( triggerWiggle ){
+                        Serial.print( F( " triggerWiggle" ) );
+                    }
+                    if( triggerToast ){
+                        Serial.print( F( " triggerToast" ) );
+                    }
+                    Serial.println();
                 }
+                break;
+            case LOG_TOAST:
+                Serial.print( deltaToastSignal );
+                Serial.print( ", " );
+                Serial.println( toastSignalFiltered );
                 break;
             default:
                 break;

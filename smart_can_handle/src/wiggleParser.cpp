@@ -1,5 +1,5 @@
 #include "gestureParser.hpp"
-int RandomForest::predict(float *x) {
+int RandomForest::predictWiggle(float *x) {
     uint8_t votes[2] = { 0 };
     // tree #1
     if (x[7] <= -180.5) {
