@@ -13,17 +13,17 @@
 #define VT100_FMT_WHITE     "\033[37m"
 #define VT100_FMT_RED       "\033[31m"
 
-#define welcomeText VT100_FMT_WHITE VT100_FMT_BOLD "\r\n"                                                       \
-                    "  _                     _    "  VT100_FMT_RED    "  ____   _____ \r\n"     VT100_FMT_WHITE \
-                    " | |                   | |   "  VT100_FMT_RED    " / __ \\ / ____|\r\n"    VT100_FMT_WHITE \
-                    " | | ____ _ _ __   __ _| |_  "  VT100_FMT_RED    "| |  | | (___  \r\n"     VT100_FMT_WHITE \
-                    " | |/ / _` | '_ \\ / _` | __| " VT100_FMT_RED    "| |  | |\\___ \\ \r\n"   VT100_FMT_WHITE \
-                    " |   < (_| | |_) | (_| | |_  "  VT100_FMT_RED    "| |__| |____) |\r\n"     VT100_FMT_WHITE \
-                    " |_|\\_\\__,_| .__/ \\__,_|\\__|  " VT100_FMT_RED"\\____/|_____/ \r\n"     VT100_FMT_WHITE \
+#define welcomeText VT100_FMT_WHITE VT100_FMT_REGULAR "\r\n"                                                       \
+                    "  _                     _    "      "  ____   _____ \r\n"      \
+                    " | |                   | |   "      " / __ \\ / ____|\r\n"     \
+                    " | | ____ _ _ __   __ _| |_  "      "| |  | | (___  \r\n"      \
+                    " | |/ / _` | '_ \\ / _` | __| "     "| |  | |\\___ \\ \r\n"    \
+                    " |   < (_| | |_) | (_| | |_  "      "| |__| |____) |\r\n"      \
+                    " |_|\\_\\__,_| .__/ \\__,_|\\__|  " "\\____/|_____/ \r\n"      \
                     "           | |                              \r\n"                                          \
                     "           |_|                              \r\n"                                          \
-                    "\r\n" VT100_FMT_REGULAR VT100_FMT_WHITE                                                    \
-                    "Created by Daniel Hajnal 2023.\r\n$: "
+                    "\r\n"                                                      \
+                    "Daniel Hajnal 2023.\r\n$: "
 
 void commandLineInit();
 
@@ -32,7 +32,6 @@ void commandLineUpdate();
 bool logAngle_func( char *args, Stream *response, void* parent );
 bool logGyro_func( char *args, Stream *response, void* parent );
 bool logTrain_func( char *args, Stream *response, void* parent );
-bool beepTest_func( char *args, Stream *response, void* parent );
 bool trainEn_func( char *args, Stream *response, void* parent );
 bool trainDis_func( char *args, Stream *response, void* parent );
 bool logTrigger_func( char *args, Stream *response, void* parent );

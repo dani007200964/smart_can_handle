@@ -25,8 +25,19 @@ extern const uint8_t* weReNotGonnaMidi;
 extern const uint8_t* vodkaMidi;
 extern const uint8_t* dejaVuMidi;
 extern const uint8_t* titanicMidi;
+extern const uint8_t* mariaMidi;
+extern const uint8_t* nyanMidi;
+extern const uint8_t* shrekMidi;
+extern const uint8_t* guntherMidi;
+extern const uint8_t* ripMidi;
+extern const uint8_t* xpMidi;
 
-extern int beepPeriodOff;
+extern const uint8_t* trackList[];
+
+extern uint8_t trackListSize;
+extern uint8_t songID;
+
+extern int beepPeriod;
 extern int beepFrequency;
 
 extern int buzzerPin;

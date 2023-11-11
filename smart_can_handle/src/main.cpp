@@ -8,21 +8,33 @@ logType_t logType = NO_LOG;
 
 midiPlayer player( BUZZER_PIN );
 
-int beepPeriodOn = 20;
-int beepPeriodOff = 1000;
-unsigned long beepPeriod = beepPeriodOff;
+unsigned long nextBeep;
+unsigned long beepStart;
 int beepFrequency = 440;
 bool beepActive = false;
-unsigned long beepTimer = 0;
+
+
+uint8_t songID = 0;
 
 
 void setup() {
+
     // put your setup code here, to run once:
     Serial.begin( 115200 );
+
+    // MPU6050 init section
     sensorInit();
+
+
+    // Command line init
     commandLineInit();
 
+    randomSeed(analogRead(0));
+    songID = random( trackListSize );
+
     Serial.print( F( welcomeText ) );
+    player.stop();
+    player.play( xpMidi );
 
 }
 
@@ -32,32 +44,39 @@ void loop() {
     commandLineUpdate();
     player.update();
 
-    if( beepPeriodOff > 0 ){
+    if( !player.isPlaying() ){
 
-        if( ( millis() - beepTimer ) > beepPeriod ){
 
-            beepActive = !beepActive;
+        if( beepPeriod != 0 ){
 
             if( beepActive ){
-                tone( buzzerPin, beepFrequency );
-                beepPeriod = beepPeriodOn;
+                if( millis() > nextBeep ){
+                    beepActive = false;
+                    noTone( buzzerPin );
+                    beepStart = millis();
+                }
             }
 
             else{
-                noTone( buzzerPin );
-                beepPeriod = beepPeriodOff;
-            }
 
-            beepTimer = millis();
-            //Serial.println( "Beep" );
+                nextBeep = beepStart + beepPeriod;
+                if( millis() > nextBeep ){
+                    beepActive = true;
+                    tone( buzzerPin, beepFrequency );
+                    nextBeep = millis() + 20;
+                }
+
+            }
 
         }
 
+        else{
+            noTone( BUZZER_PIN );
+        }
+
+
     }
 
-    else if( !player.isPlaying() ){
-        noTone( buzzerPin );
-    }
 
 
 }

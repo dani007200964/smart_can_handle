@@ -2,18 +2,13 @@
 
 Commander::systemCommand_t API_tree[] = {
     SYSTEM_COMMAND_I2CSCAN,
-    //SYSTEM_COMMAND_DIGITALREAD,
-    //SYSTEM_COMMAND_DIGITALWRITE,
-    //SYSTEM_COMMAND_PINMODE,
-
-
+    SYSTEM_COMMAND_REBOOT,
     systemCommand( "trainEn", "", trainEn_func ),
     systemCommand( "trainDis", "", trainDis_func ),
     systemCommand( "logAngle", "", logAngle_func ),
     systemCommand( "logGyro", "", logGyro_func ),
     systemCommand( "logTrain", "", logTrain_func ),
     systemCommand( "logTrigger", "", logTrigger_func ),
-    systemCommand( "beepTest", "", beepTest_func ),
     systemCommand( "play", "", play_func ),
     systemCommand( "stop", "", stop_func ),
     systemCommand( "logToast", "", logToast_func ),
@@ -27,6 +22,8 @@ char commandBuffer[ COMMAND_SIZE ];
 Commander commander;
 
 void commandLineInit(){
+
+    commander.setDebugLevel( Commander::DEBUG_VERBOSE );
 
     // There is an option to attach a debug channel to Commander.
     // It can be handy to find any problems during the initialization
@@ -55,32 +52,18 @@ void commandLineUpdate(){
 }
 
 bool logAngle_func( char *args, Stream *response, void* parent ){
-  if( response ){
-    response -> println( F( "Angle data:" ) );
-  }
   logType = LOG_ANGLE;
   return true;
 }
 
 bool logGyro_func( char *args, Stream *response, void* parent ){
-  if( response ){
-    response -> println( F( "Gyro data:" ) );
-  }
   logType = LOG_GYRO;
   return true;
 }
 
 bool logTrain_func( char *args, Stream *response, void* parent ){
-  if( response ){
-    response -> println( F( "Train data:" ) );
-  }
   logType = LOG_TRAIN;
   return true;
-}
-
-bool beepTest_func( char *args, Stream *response, void* parent ){
-    tone( BUZZER_PIN, 440, 500 );
-    return true;
 }
 
 bool trainEn_func( char *args, Stream *response, void* parent ){
@@ -114,21 +97,27 @@ bool play_func( char *args, Stream *response, void* parent ){
     musicID.parseInt();
 
     if( !musicID ){
-        Serial.println( F( "---- Available songs ----" ) );
-        Serial.println( F( " -Barbie       : 1" ) );
-        Serial.println( F( " -Drink        : 2" ) );
-        Serial.println( F( " -Movin Cruisin: 3" ) );
-        Serial.println( F( " -Lalalala     : 4" ) );
-        Serial.println( F( " -Rick         : 5" ) );
-        Serial.println( F( " -We're Not    : 6" ) );
-        Serial.println( F( " -Vodka        : 7" ) );
-        Serial.println( F( " -Deja Vu      : 8" ) );
-        Serial.println( F( " -Titanic      : 9" ) );
+        /*
+        Serial.println( F( " 1 : Barbie" ) );
+        Serial.println( F( " 2 : Drink" ) );
+        Serial.println( F( " 3 : Movin Cruisin" ) );
+        Serial.println( F( " 4 : Lalalala" ) );
+        Serial.println( F( " 5 : Rick" ) );
+        Serial.println( F( " 6 : We're Not" ) );
+        Serial.println( F( " 7 : Vodka" ) );
+        Serial.println( F( " 8 : Deja Vu" ) );
+        Serial.println( F( " 9 : Titanic" ) );
+        Serial.println( F( " 10: Maria" ) );
+        Serial.println( F( " 11: Nyan" ) );
+        Serial.println( F( " 12: Shrek" ) );
+        Serial.println( F( " 13: Gunther" ) );
+        Serial.println( F( " 14: R.I.P" ) );
+        */
         return true;
     }
 
     if( player.isPlaying() ){
-        Serial.print( F( "Song is already playing." ) );
+        Serial.print( F( "Playing!" ) );
         return true;
     }
 
@@ -160,8 +149,22 @@ bool play_func( char *args, Stream *response, void* parent ){
         case 9:
             player.play( titanicMidi );
             break;
+        case 10:
+            player.play( mariaMidi );
+            break;
+        case 11:
+            player.play( nyanMidi );
+            break;
+        case 12:
+            player.play( shrekMidi );
+            break;
+        case 13:
+            player.play( guntherMidi );
+            break;
+        case 14:
+            player.play( ripMidi );
+            break;
         default:
-            Serial.print( F( "Selected ID not valid!" ) );
             break;
     }
 

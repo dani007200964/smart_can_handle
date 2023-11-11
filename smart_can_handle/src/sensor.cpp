@@ -14,9 +14,10 @@ int16_t gyroX = 0;
 int16_t gyroY = 0;
 int16_t gyroZ = 0;
 
-int16_t toastSignalFiltered = 0;
-int16_t toastArray[ TOAST_ARRAY_SIZE ] = { 0 };
-int8_t toastCntr = 0;
+float toastSignalFiltered = 0.0;
+float toastArray[ TOAST_ARRAY_SIZE ] = { 0 };
+float selectedFeaturesToast[ 12 ];
+uint8_t selectedFeatureIndexesToast[ 12 ] = { 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22 };
 
 const float DEG2RAD = PI / 180.0f;
 const float RAD2DEG = 180.0f / PI;
@@ -34,24 +35,59 @@ float selectedFeatures[ 15 ];
 
 unsigned long sensorTimerStart = 0;
 
+int beepPeriod = 1000;
+
 void sensorInit(){
 
+    int i;
+
+    delay( 1000 );
+
+    commander_uptime_func( NULL, &Serial, NULL );
+    Serial.println( " I2C 400kHz..." );
     Wire.setClock( 400000  );
     Wire.begin();
 
 
     // initialize MPU6050
-    Serial.println( F( "Initializing MPU6050..." ) );
-    motionSensor.initialize();
-
-    if( motionSensor.testConnection() ){
-      Serial.println( " [ OK ]" );
-      sensorInitialized = true;
+    commander_uptime_func( NULL, &Serial, NULL );
+    Serial.print( F( " Sensor init" ) );
+    //motionSensor.initialize();
+    if( !motionSensor.testConnection() ){
+      Serial.println( '-' );
+      sensorInitialized = false;
+      return;
     }
 
-    else{
-      Serial.println( " [ ERROR ]" );
+    motionSensor.reset();
+
+    for( i = 0; i < 3; i++ ){
+        // Initial Delay
+        delay( 1000 );
+        Serial.print( '.' );
     }
+
+    motionSensor.setClockSource( (MPU6050_IMU::MPU6050_CLOCK_PLL_XGYRO));
+    motionSensor.setFullScaleGyroRange( (MPU6050_IMU::MPU6050_GYRO_FS_250));
+    motionSensor.setFullScaleAccelRange( (MPU6050_IMU::MPU6050_ACCEL_FS_2));
+    motionSensor.setSleepEnabled(false);
+
+    Serial.println( "[ OK ]" );
+
+    for( i = 0; i < GYRO_ARRAY_SIZE; i++ ){
+        gyroArray[ i ] = 0;
+    }
+
+    for( i = 0; i < TOAST_ARRAY_SIZE; i++ ){
+        toastArray[ i ] = 0;
+    }
+
+    for( i = 0; i < 100; i++ ){
+        motionSensor.getMotion6( &accX, &accY, &accZ, &gyroX, &gyroY, &gyroZ );
+        delay( 10 );
+    }
+
+    sensorInitialized = true;
 
 }
 
@@ -68,7 +104,7 @@ void sensorUpdate(){
     bool triggerToast = false;
 
     int i;
-    int16_t deltaToastSignal;
+    float tmp;
 
     if( !sensorInitialized ){
         return;
@@ -81,9 +117,9 @@ void sensorUpdate(){
 
     motionSensor.getMotion6( &accX, &accY, &accZ, &gyroX, &gyroY, &gyroZ );
 
-    accX_f = accZ / 1000.0;
-    accY_f = accY / 1000.0;
-    accZ_f = accX / 1000.0;
+    accX_f = accZ / 125.0;
+    accY_f = accY / 125.0;
+    accZ_f = accX / 125.0;
 
     // accX_f * unitX + accY_f * unitY + accZ_f * unitZ
     // unitX = 0.0;
@@ -114,33 +150,24 @@ void sensorUpdate(){
         for( i = 0; i < GYRO_ARRAY_SIZE; i++ ){
             gyroArray[ i ] = 0;
         }
-        player.play( vodkaMidi );
+        player.play( trackList[ songID ] );
+        songID++;
+        if( songID >= trackListSize ){
+            songID = 0;
+        }
     }
 
     //--- Toast detection ---//
-    deltaToastSignal = toastSignalFiltered;
-    i = (int16_t)accZ / 100;
-    toastSignalFiltered = 30 * i + 70 * toastSignalFiltered;
-    toastSignalFiltered /= 100;
-    deltaToastSignal = deltaToastSignal - toastSignalFiltered;
+    tmp = (float)accX / 8192.0;
+    toastSignalFiltered = 0.2 * tmp + 0.8 * toastSignalFiltered;
+    //toastSignalFiltered = toastSignalFiltered * 50.0f;
 
     for( i = 0; i < TOAST_ARRAY_SIZE - 1; i++ ){
         toastArray[ i ] = toastArray[ i + 1 ];
     }
-    toastArray[ i ] = deltaToastSignal;
+    toastArray[ i ] = toastSignalFiltered / 2.0;
 
-    int16_t min = toastArray[ 0 ];
-    int16_t max = toastArray[ 0 ];
-
-    for( i = 1; i < TOAST_ARRAY_SIZE; i++ ){
-        if( min > toastArray[ i ] ){
-            min = toastArray[ i ];
-        }
-        if( max < toastArray[ i ] ){
-            max = toastArray[ i ];
-        }
-    }
-
+    /*
     if( toastCntr <= 0 ){
 
         toastCntr = 3;
@@ -175,11 +202,14 @@ void sensorUpdate(){
 
         }
     }
+    */
+
+    for( i = 0; i < 12; i++ ){
+        selectedFeaturesToast[ i ] = toastArray[ selectedFeatureIndexesToast[ i ] ];
+    }
 
 
-
-
-    //triggerToast = RandomForest::predictToast( selectedFeaturesToast );
+    triggerToast = RandomForest::predictToast( selectedFeaturesToast );
 
     if( triggerToast ){
         for( i = 0; i < TOAST_ARRAY_SIZE; i++ ){
@@ -194,23 +224,19 @@ void sensorUpdate(){
 
         if( angle > ANGLE_LOW_THRESHOLD ){
             i = round( angle * 10.0 );
-            beepPeriodOff = map( i, ANGLE_MAP_LOW_BOUND, ANGLE_MAP_HIGH_BOUND, BEEP_PERIOD_MAP_LOW_BOUND, BEEP_PERIOD_MAP_HIGH_BOUND );
+            beepPeriod = map( i, ANGLE_MAP_LOW_BOUND, ANGLE_MAP_HIGH_BOUND, BEEP_PERIOD_MAP_LOW_BOUND, BEEP_PERIOD_MAP_HIGH_BOUND );
             beepFrequency = map( i, ANGLE_MAP_LOW_BOUND, ANGLE_MAP_HIGH_BOUND, BEEP_FREQ_MAP_LOW_BOUND, BEEP_FREQ_MAP_HIGH_BOUND );
-            if(beepPeriodOff < 50){
-                beepPeriodOff = 50;
+            if(beepPeriod < 50){
+                beepPeriod = 50;
             }
-            if( beepPeriodOff > 1000 ){
-                beepPeriodOff = 1000;
+            if( beepPeriod > 1000 ){
+                beepPeriod = 1000;
             }
         }
         else{
-            beepPeriodOff = 0;
+            beepPeriod = 0;
         }
 
-    }
-
-    else{
-        beepPeriodOff = 0;
     }
 
     if( logType != NO_LOG ){
@@ -244,9 +270,10 @@ void sensorUpdate(){
                 }
                 break;
             case LOG_TOAST:
-                Serial.print( deltaToastSignal );
-                Serial.print( ", " );
-                Serial.println( toastSignalFiltered );
+                //Serial.print( deltaToastSignal );
+                //Serial.print( ", " );
+                //Serial.println( toastSignalFiltered, 3 );
+                printToastData();
                 break;
             default:
                 break;
@@ -264,6 +291,20 @@ void printTrainData(){
 
   for( i = 0; i < GYRO_ARRAY_SIZE; i++ ){
     Serial.print( gyroArray[ i ] );
+    Serial.print( ", " );
+  }
+
+  Serial.println( !digitalRead( TRAIN_BUTTON_PIN ) );
+}
+
+void printToastData(){
+  int i;
+
+  Serial.print( millis() % 1000 );
+    Serial.print( ", " );
+
+  for( i = 0; i < TOAST_ARRAY_SIZE; i++ ){
+    Serial.print( toastArray[ i ], 3 );
     Serial.print( ", " );
   }
 

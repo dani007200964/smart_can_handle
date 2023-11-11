@@ -18,7 +18,7 @@
 
 #define GYRO_ARRAY_SIZE 40
 
-#define TOAST_ARRAY_SIZE 15
+#define TOAST_ARRAY_SIZE 30
 
 #define ANGLE_LOW_THRESHOLD 22.5
 

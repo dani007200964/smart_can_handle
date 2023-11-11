@@ -11,5 +11,6 @@ void sensorInit();
 void sensorUpdate();
 
 void printTrainData();
+void printToastData();
 
 #endif
